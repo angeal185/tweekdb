@@ -1,0 +1,46 @@
+{
+  "settings": {
+    "verbose": true,
+    "dev": true,
+    "lodash_path": "lodash",
+    "noconflict": false
+  },
+  "backup": {
+    "enabled": false,
+    "ext": "tmp",
+    "pre": "."
+  },
+  "turbo": {
+    "enabled": true,
+    "ms": 5
+  },
+  "cron": {
+    "enabled": false,
+    "ms": 10000
+  },
+  "gzip":{
+    "enabled": false,
+    "backup": true,
+    "settings":{
+      "level": 9,
+      "memLevel": 9,
+      "strategy": 0
+    }
+  },
+  "encryption":{
+    "enabled": false,
+    "secret": "5b3fd9d0d535822f369f7271a2399245adf02f5003b5183a3b243e22dfb036d9",
+    "secret_len": 32,
+    "iterations": 60000,
+    "settings": {
+      "cipher": "aes",
+      "bit_len": "256",
+      "iv_len": 32,
+      "tag_len": 16,
+      "encode": "hex",
+      "mode": "gcm",
+      "digest": "sha512"
+    }
+  },
+  "schema": {}
+}
