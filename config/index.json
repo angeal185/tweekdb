@@ -3,7 +3,8 @@
     "verbose": true,
     "dev": true,
     "lodash_path": "lodash",
-    "noconflict": false
+    "noconflict": false,
+    "crypto_utils": true
   },
   "backup": {
     "enabled": false,
@@ -18,6 +19,26 @@
     "enabled": false,
     "ms": 10000
   },
+  "fetch": {
+    "enabled": true,
+    "config": {
+      "hostname": "",
+      "port": 443,
+      "path": "",
+      "method": "GET",
+      "headers":{}
+    }
+  },
+  "sync": {
+    "enabled": false,
+    "config": {
+      "hostname": "",
+      "port": 443,
+      "path": "",
+      "method": "POST",
+      "headers":{}
+    }
+  },
   "gzip":{
     "enabled": false,
     "backup": true,
@@ -27,9 +48,14 @@
       "strategy": 0
     }
   },
+  "hmac": {
+    "secret": "",
+    "encode": "hex",
+    "digest": "sha512"
+  },
   "encryption":{
     "enabled": false,
-    "secret": "5b3fd9d0d535822f369f7271a2399245adf02f5003b5183a3b243e22dfb036d9",
+    "secret": "",
     "secret_len": 32,
     "iterations": 60000,
     "settings": {
@@ -41,6 +67,10 @@
       "mode": "gcm",
       "digest": "sha512"
     }
+  },
+  "static":{
+    "enabled": true,
+    "dest": "./"
   },
   "schema": {}
 }

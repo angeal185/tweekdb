@@ -1,5 +1,6 @@
 const fs = require('fs'),
 zlib = require('zlib'),
+https = require('https'),
 enc = require('./lib/enc');
 
 let config;
@@ -40,6 +41,18 @@ function tweekdb(src, cnf){
   this.gzip =  cnf.gzip || config.gzip.enabled;
   this.gzip_backup = config.gzip.backup;
 
+  if(config.static.enabled){
+    this.static_dest = config.static.dest;
+  }
+
+  if(config.fetch.enabled){
+    this.fetch_config = cnf.fetch_config || config.fetch.config;
+  }
+
+  if(config.sync.enabled){
+    this.sync_config = cnf.sync_config || config.sync.config;
+  }
+
   if(this.encryption){
     this.secret = config.encryption.secret || null;
     this.enc_cnf = config.encryption.settings || null;
@@ -79,7 +92,7 @@ tweekdb.prototype = {
           cl(vb,['status','db '+ this.src +' backup cached and ready.'],96);
           return data ? this.deserialize(data) : this.schema;
         } catch (err) {
-          let data = this.serialize(this.schema)
+          let data = this.serialize(this.schema);
           if(this.encryption){
             data = enc.encrypt(data, this.secret, this.enc_cnf);
           }
@@ -131,7 +144,7 @@ tweekdb.prototype = {
       })
     }
   },
-  write: function(data, cb) {
+  save: function(data, cb) {
     data = this.serialize(data);
     if(this.encryption){
       data = enc.encrypt(data, this.secret, this.enc_cnf);
@@ -204,20 +217,179 @@ tweekdb.prototype = {
   }
 }
 
+if(config.static.enabled){
+  tweekdb.prototype.static = function(data, title, cb){
+    if(typeof data !== 'string'){
+      data = JSON.stringify(data)
+    }
+    let dest = this.static_dest + title + '.json';
+    if(!cb){
+      return fs.writeFileSync(dest, data);
+    } else {
+      fs.writeFile(dest, data, function(err){
+        if(err){return cb(err)}
+        cb(false)
+      })
+    }
+  }
+}
+
+if(config.fetch.enabled){
+  tweekdb.prototype.fetch = function(cb){
+    let $this = this,
+    arr = ['key','cert','pfx'];
+
+    for (let i = 0; i < arr.length; i++) {
+      if(this.fetch_config[arr[i]]){
+        this.fetch_config[arr[i]] = fs.readFileSync(this.fetch_config[arr[i]])
+        if(arr[i] === 'ca'){
+          this.fetch_config[arr[i]] = [this.fetch_config[arr[i]]]
+        }
+      }
+    }
+
+    const req = https.request(this.fetch_config, function(res){
+
+      let scode = res.statusCode,
+      rawData = '';
+      console.log(scode)
+      if(scode < 200 || scode >= 300){
+        cb('request failed with code '+ scode);
+        return cl(vb,['error','db from '+ $this.fetch_config.hostname +' failed with code '+ scode],91)
+      }
+
+      res.setEncoding('utf8');
+
+      res.on('data', function(chunk){
+        rawData += chunk;
+      });
+
+      res.on('end', function(){
+          try {
+            let data = rawData;
+            if($this.encryption){
+              data = enc.decrypt(data, $this.secret, $this.enc_cnf);
+            }
+            data = $this.deserialize(data);
+            cb(false, data);
+            cl(vb,['status','db from '+ $this.fetch_config.hostname +' cached and ready.'],96);
+          } catch (err) {
+            throw err;
+          }
+
+      });
+
+    });
+
+    req.on('error', function(err){
+      console.log(err)
+      cb(err);
+    })
+
+    req.end();
+
+  }
+}
+
+if(config.sync.enabled){
+  tweekdb.prototype.sync = function(body, cb){
+    let $this = this,
+    arr = ['key','cert','pfx'];
+
+    if(typeof body !== 'string'){
+      try {
+        body = JSON.stringify(body);
+      } catch (err) {
+        return cb('invalid sync data')
+      }
+    }
+
+    if(this.encryption){
+      body = enc.encrypt(body, this.secret, this.enc_cnf);
+    }
+
+    for (let i = 0; i < arr.length; i++) {
+      if(this.sync_config[arr[i]]){
+        this.sync_config[arr[i]] = fs.readFileSync(this.sync_config[arr[i]])
+        if(arr[i] === 'ca'){
+          this.sync_config[arr[i]] = [this.sync_config[arr[i]]]
+        }
+      }
+    }
+
+    this.sync_config.headers['Content-Length'] = body.length;
+
+    const req = https.request(this.sync_config, function(res){
+
+      let scode = res.statusCode,
+      rawData = '';
+
+      if(scode < 200 || scode >= 300){
+        cb('request failed with code '+ scode);
+        return cl(vb,['error','db from '+ $this.sync_config.hostname +' failed with code '+ scode],91)
+      }
+
+      res.setEncoding('utf8');
+
+      res.on('data', function(chunk){
+        rawData += chunk;
+      });
+
+      res.on('end', function(){
+          try {
+            let data = rawData;
+
+            data = $this.deserialize(data);
+            cb(false, data);
+            cl(vb,['status','db from '+ $this.fetch_config.hostname +' cached and ready.'],96);
+          } catch (err) {
+            throw err;
+          }
+
+      });
+
+    });
+
+    req.on('error', function(err){
+      console.log(err)
+      cb(err);
+    })
+
+    req.write(body)
+    req.end();
+
+  }
+}
+
 function tweek(src) {
 
   const db = _.chain({});
 
-  _.prototype.write = _.wrap(_.prototype.value, function(func, cb) {
+  _.prototype.save = _.wrap(_.prototype.value, function(func, cb) {
     if(!cb){
-      return db.write(func.apply(this))
+      return db.save(func.apply(this))
     } else {
-      db.write(func.apply(this), function(err,res){
+      db.save(func.apply(this), function(err,res){
         if(err){return cb(err)}
         cb(false,res)
       })
     }
   })
+
+  if(config.static.enabled){
+    _.prototype.static = _.wrap(_.prototype.value, function(func, title, cb) {
+      if(!cb){
+        return src.static(func.apply(this), title)
+      } else {
+        src.static(func.apply(this), title, function(err,res){
+          if(err){return cb(err)}
+          cb(false,res)
+        })
+      }
+    })
+  }
+
+  _.prototype.val = _.prototype.value
 
   function set_state(state) {
     db.__wrapped__ = state
@@ -237,12 +409,27 @@ function tweek(src) {
     }
   }
 
-  db.write_state = function(data, cb){
+  if(config.fetch.enabled){
+    db.fetch = function(cb){
+      src.fetch(function(err,data){
+        if(err){return cb(err)}
+        cb(false, set_state(data))
+      })
+    }
+  }
+
+  if(config.sync.enabled){
+    db.sync = function(cb){
+      src.fetch(db.val(), cb)
+    }
+  }
+
+  db.save_state = function(data, cb){
     if(!cb){
-      src.write(db.getState());
+      src.save(db.val());
       return data;
     } else {
-      src.write(db.getState(), function(err){
+      src.save(db.val(), function(err){
         if(err){return cb(err)}
         cb(false, data)
       })
@@ -250,16 +437,17 @@ function tweek(src) {
   }
 
   db.backup = function(cb){
-    return src.set_backup(db.getState(), cb);
+    return src.set_backup(db.val(), cb);
   }
 
   if(config.turbo.enabled){
+
     let timeout;
-    db.write = function(data, cb) {
+    db.save = function(data, cb) {
 
   		const later = function() {
   			timeout = null;
-  			db.write_state(data, cb)
+  			db.save_state(data, cb)
   		};
 
       if(!timeout || typeof timeout === 'object'){
@@ -276,46 +464,55 @@ function tweek(src) {
     }
 
   } else {
-    db.write = db.write_state;
-  }
-
-  db.getState = function(){
-    return db.__wrapped__;
+    db.save = db.save_state;
   }
 
   db.setState = function(state){
     return set_state(state);
   }
 
-  db.encrypt = function(data, secret){
-    if(!secret){
-      secret = config.encryption.secret;
-    }
-    return enc.encrypt(data, secret, config.encryption.settings);
-  }
+  if(config.settings.crypto_utils){
 
-  db.decrypt = function(data, secret){
-    if(!secret){
-      secret = config.encryption.secret;
+    db.hmac = function(data, secret){
+      return enc.hmac(data, secret, config.hmac.digest, config.hmac.encode);
     }
-    return enc.decrypt(data, config.encryption.secret, config.encryption.settings);
-  }
 
-  db.keygen = function(len, iter){
-    return enc.keygen(
-      config.encryption.secret_len,
-      config.encryption.iterations,
-      config.encryption.settings.digest,
-      config.encryption.settings.encode
-    )
+    db.hash = function(data){
+      return enc.hash(data, config.hmac.digest, config.hmac.encode);
+    }
+
+    db.uuid = function(){
+      return enc.uuidv4();
+    }
+
+    db.encrypt = function(data, secret){
+      if(!secret){
+        secret = config.encryption.secret;
+      }
+      return enc.encrypt(data, secret, config.encryption.settings);
+    }
+
+    db.decrypt = function(data, secret){
+      if(!secret){
+        secret = config.encryption.secret;
+      }
+      return enc.decrypt(data, config.encryption.secret, config.encryption.settings);
+    }
+
+    db.keygen = function(len, iter){
+      return enc.keygen(
+        config.encryption.secret_len,
+        config.encryption.iterations,
+        config.encryption.settings.digest,
+        config.encryption.settings.encode
+      )
+    }
   }
 
   if(config.settings.dev){
-
     db.clone_config = function(){
       fs.writeFileSync(process.cwd() + '/tweekdb.json', JSON.stringify(config,0,2))
     }
-
   }
 
   if(config.cron.enabled){
@@ -329,6 +526,5 @@ function tweek(src) {
 
   return db;
 }
-
 
 module.exports = { tweek, tweekdb }
