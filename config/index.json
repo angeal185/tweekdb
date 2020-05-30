@@ -20,7 +20,7 @@
     "ms": 10000
   },
   "fetch": {
-    "enabled": true,
+    "enabled": false,
     "config": {
       "hostname": "",
       "port": 443,
@@ -69,7 +69,7 @@
     }
   },
   "static":{
-    "enabled": true,
+    "enabled": false,
     "dest": "./"
   },
   "schema": {}
