@@ -212,10 +212,10 @@ console.log(db.get('array').val()) // [1,3,4,5]
 
 // db.load/db.fetch/db.cache will store your db to cache and should only be called once.
 
-// db load sync
+// db load from file to cache sync
 db.load();
 
-//db load async
+//db load from file to cache  async
 db.load(function(err, data){
   if(err){return console.error(err)};
   // db. in now available outside of this scope
