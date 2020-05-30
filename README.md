@@ -1,5 +1,6 @@
 # tweekdb
 
+
 ## setup
 
 ```js
@@ -10,7 +11,7 @@ const { tweek, tweekdb } = require('./tweekdb');
 //minimal base setup example
 const db = tweek(new tweekdb('./db'));
 
-//complete base setup example
+//complete custom base setup example
 const db = tweek(new tweekdb('./db',{
   //add custom db serialize function
   serialize: function(data){
@@ -168,7 +169,7 @@ db.clone_config();
   the `config.backup` setting will enable db backups  on save() and load from the backup file in the unlikely event of data corruption to the db. this setting can be used in conjunction with `config.gzip` to compress your backups. if you are using a large sized db `config.turbo` is recommended. db backups can also be called manually. this method is non blocking.
 
 ## Turbo mode
-  the `config.turbo` setting will debounce file writes in a non blocking way within the time-frame that you specify. for example, if you set  `config.turbo.ms` to 100, all calls to .save() will have .val() stored to cache but the file write will be debounced for 100ms. if another call to .save() is detected within 100ms, the timeframe is reset and write is debounced again. If you have 1000 consecutive writes within 100ms of each other, only the last write will be written. this process is non blocking and will return/callback to the user at the point of .val() being updated. the speed gains of this feature grow with the size of your db.
+  the `config.turbo` setting will debounce file writes in a non blocking way within the time-frame that you specify. for example, if you set  `config.turbo.ms` to 100, all calls to .save() will have .val() stored to cache but the file write will be debounced for 100ms. if another call to .save() is detected within 100ms, the timeframe is reset and write is debounced again. out of all the consecutive writes you receive within 100ms of each other, only the last write will be written. this process is non blocking and will return/callback to the user at the point of .val() being updated. the speed gains of this feature should theoretically grow with the size of your db.
 
 ## encryption
   tweekdb supports encryption out of the box and can be configured at `config.encryption`. prior to enabling this feature an appropriately sized encryption key must be generated with the appropriate encoding. this can be created and returned by calling `db.keygen()`. this method is non blocking when used in conjunction with `config.turbo`.
@@ -178,6 +179,41 @@ db.clone_config();
 
 ## cron
   the `config.cron` setting will enable you to set a recurring cron job to be carried out at the inteval in milliseconds you specify at `config.cron.ms`. the cron function has one arg which the current state of the db. an example function can be found in the settings section.
+
+## serialize/deserialize
+  by default, tweekdb will serialize/deserialize valid json. this can be customized via the serialize/deserialize functions so that tweekdb will serialize/deserialize from and to any format and or encoding.
+  for example:
+
+```js
+
+  // store db as json pretty
+  const db = tweek(new tweekdb('./db.json',{
+    serialize: function(data){
+      return JSON.stringify(data,0,2)
+    }
+  }));
+
+  // store db as byte array
+  const db = tweek(new tweekdb('./db',{
+    deserialize: function(data){
+      return JSON.parse(Buffer.from(JSON.parse(data)).toString())
+    },
+    serialize: function(data){
+      return JSON.stringify(Array.from(Buffer.from(JSON.stringify(data))))
+    }
+  }));
+
+  // store db hex encoded
+  const db = tweek(new tweekdb('./db',{
+    serialize: function(data){
+      return Buffer.from(JSON.stringify(data), 'utf8').toString('hex')
+    },
+    deserialize: function(data){
+      return JSON.parse(Buffer.from(data, 'hex').toString())
+    }
+  }))
+
+```
 
 ## lodash
   tweekdb is built using lodash. should you wish, you can create your own filtered lodash module and update the require() path at `config.settings.lodash_path`.
@@ -264,6 +300,10 @@ db.defaults({
   array:[1,2,3,4,5],
   key: 'val'
 }).save()
+
+
+// create a key val pair and save state to cache.
+db.set('key', 'value').val();
 
 // create an array named array and save state to cache.
 db.set('array', []).val();

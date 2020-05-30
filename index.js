@@ -74,6 +74,7 @@ tweekdb.prototype = {
         if(this.gzip){
           data = zlib.unzipSync(data, config.gzip.settings);
         }
+        data = data.toString('utf8');
         if(this.encryption){
           data = enc.decrypt(data, this.secret, this.enc_cnf);
         }
@@ -86,6 +87,7 @@ tweekdb.prototype = {
           if(this.gzip  || this.gzip_backup){
             data = zlib.unzipSync(data, config.gzip.settings);
           }
+          data = data.toString('utf8');
           if(this.encryption){
             data = enc.decrypt(data, this.secret, this.enc_cnf);
           }
@@ -125,6 +127,7 @@ tweekdb.prototype = {
             if($this.gzip  || this.gzip_backup){
               res = zlib.unzipSync(res, config.gzip.settings);
             }
+            res = res.toString('utf8');
             if($this.encryption){
               res = enc.decrypt(res, $this.secret, $this.enc_cnf);
             }
@@ -135,6 +138,7 @@ tweekdb.prototype = {
           if($this.gzip){
             data = zlib.unzipSync(data, config.gzip.settings);
           }
+          data = data.toString('utf8');
           if($this.encryption){
             res = enc.decrypt(res, $this.secret, $this.enc_cnf);
           }
