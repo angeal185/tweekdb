@@ -345,7 +345,7 @@ if(config.sync.enabled){
 
             data = $this.deserialize(data);
             cb(false, data);
-            cl(vb,['status','db from '+ $this.fetch_config.hostname +' cached and ready.'],96);
+            cl(vb,['status','db from '+ $this.sync_config.hostname +' cached and ready.'],96);
           } catch (err) {
             throw err;
           }
