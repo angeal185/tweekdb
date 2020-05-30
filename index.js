@@ -467,7 +467,7 @@ function tweek(src) {
     db.save = db.save_state;
   }
 
-  db.setState = function(state){
+  db.cache = function(state){
     return set_state(state);
   }
 
