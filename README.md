@@ -215,7 +215,7 @@ db.load();
 db.load(function(err, data){
   if(err){return console.error(err)};
   // db. in now available outside of this scope
-  cl(data.val())
+  console.log(data.val())
 });
 
 
@@ -232,15 +232,15 @@ db.save(function(err){
 
 //load remode db to cache using the settings in your config file
 db.fetch(function(err,data){
-  if(err){return cl(err)}
+  if(err){return console.error(err)}
   // db. in now available outside of this scope
-  cl(data.val())
+  console.log(data.val())
 })
 
 //save a remode db using the settings in your config file
 db.sync(function(err){
-  if(err){return cl(err)}
-  cl('done')
+  if(err){return console.error(err)}
+  console.log('done')
 })
 
 // add defaults to base db schema and save state to cache.
