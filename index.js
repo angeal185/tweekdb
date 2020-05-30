@@ -499,7 +499,7 @@ function tweek(src) {
       return enc.decrypt(data, config.encryption.secret, config.encryption.settings);
     }
 
-    db.keygen = function(len, iter){
+    db.keygen = function(){
       return enc.keygen(
         config.encryption.secret_len,
         config.encryption.iterations,
