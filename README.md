@@ -1,5 +1,5 @@
 # tweekdb
-
+the flat-file, in-memory or remote-sync db that is as lightning fast or disturbingly slow as you configure it to be.
 
 ### Installation
 
