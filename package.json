@@ -1,6 +1,6 @@
 {
   "name": "tweekdb",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "flat-file, in-memory or remote-sync db that is as lightning fast or disturbingly slow as you configure it to be",
   "main": "./index.js",
   "scripts": {

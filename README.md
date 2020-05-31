@@ -158,14 +158,14 @@ db.clone_config();
     "secret_len": 32, // secret length 16/24/32
     "iterations": 60000, // pbkdf2 iterations
     "settings": {
-      "cipher": "aes", // encryption cipher aes/camilla/aria
+      "cipher": "aes", // encryption cipher aes/camellia/aria
       "bit_len": "256", // 128/192/256
-      "iv_len": 32, // encryption iv length 16/24/32
+      "iv_len": 32, // encryption iv length
       "tag_len": 16,  // encryption tag length
       "encode": "hex", // encryption encoding
-      "mode": "gcm", // encryption mode
-      "digest": "sha512" // encryption digest sha256/sha384/sha512
-                         //sha3-256/sha3-384/sha3-512
+      "mode": "gcm", // gcm/cbc/ccm/ctr/cfb/cfb1/cfb8/ocb/ofb
+      "digest": "sha512" // keygen digest sha256/sha384/sha512
+                         //sha3-256/sha3-384/sha3-512 ...
     }
   },
   "static":{ //db static file generator options
