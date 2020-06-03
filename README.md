@@ -1,7 +1,9 @@
+
 # tweekdb
 the flat-file, in-memory or remote-sync db that is as lightning fast or disturbingly slow as you configure it to be.
+#### [Live playground](https://runkit.com/angeal185/tweekdb)
 
-### Installation
+## Installation
 
 npm
 
