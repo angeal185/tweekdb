@@ -416,7 +416,12 @@ for (let i = 0; i < x.length; i++) {
 
 
 ## utils
+
+`config.settings.crypto_utils` will add the following utils to the build.
+
 ```js
+
+// config.settings.crypto_utils is not enabled, these will
 
 //create config file in cwd
 db.clone_config();
@@ -458,6 +463,14 @@ db.uuid();
   **/
 
   db.hash(data);
+
+/**
+ *  random bytes
+ *  @param {integer} len ~ length
+ *  @param {string} encode ~ hex/base64 ...
+ **/
+
+ db.rnd(len,encode)
 
 ```
 

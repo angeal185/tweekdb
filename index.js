@@ -424,7 +424,7 @@ function tweek(src) {
 
   if(config.sync.enabled){
     db.sync = function(cb){
-      src.fetch(db.val(), cb)
+      src.sync(db.val(), cb)
     }
   }
 
@@ -485,9 +485,9 @@ function tweek(src) {
       return enc.hash(data, config.hmac.digest, config.hmac.encode);
     }
 
-    db.uuid = function(){
-      return enc.uuidv4();
-    }
+    db.uuid = enc.uuidv4;
+
+    db.rnd = enc.rnd;
 
     db.encrypt = function(data, secret){
       if(!secret){
