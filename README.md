@@ -421,8 +421,6 @@ for (let i = 0; i < x.length; i++) {
 
 ```js
 
-// config.settings.crypto_utils is not enabled, these will
-
 //create config file in cwd
 db.clone_config();
 
