@@ -70,30 +70,18 @@ tweekdb.prototype = {
     if(!cb){
       try {
         data = fs.readFileSync(src);
-        if(this.gzip){
-          data = zlib.unzipSync(data, config.gzip.settings);
-        }
-        data = data.toString('utf8');
-        if(this.encryption){
-          data = enc.decrypt(data, this.secret, this.enc_cnf);
-        }
+        data = utils.check_data(this, data, config);
         utils.cl(vb,['status','db '+ src +' cached and ready.'],96);
         return this.deserialize(data);
       } catch(e) {
         utils.cl(vb,['warning','unable to load data, creating new...'],91);
         try {
-          let data = fs.readFileSync(this.backup_pre + src +'.'+ this.backup_ext);
-          if(this.gzip  || this.gzip_backup){
-            data = zlib.unzipSync(data, config.gzip.settings);
-          }
-          data = data.toString('utf8');
-          if(this.encryption){
-            data = enc.decrypt(data, this.secret, this.enc_cnf);
-          }
+          data = fs.readFileSync(this.backup_pre + src +'.'+ this.backup_ext);
+          data = utils.check_data(this, data, config);
           utils.cl(vb,['status','db '+ src +' backup cached and ready.'],96);
           return data ? this.deserialize(data) : this.schema;
         } catch (err) {
-          let data = this.serialize(this.schema);
+          data = this.serialize(this.schema);
           if(this.encryption){
             data = enc.encrypt(data, this.secret, this.enc_cnf);
           }
@@ -111,7 +99,7 @@ tweekdb.prototype = {
         if(err){
           fs.readFile(this.backup_pre + src +'.'+ this.backup_ext, function(err, res){
             if(err){
-              let data = $this.serialize($this.schema);
+              data = $this.serialize($this.schema);
               if($this.encryption){
                 data = enc.encrypt(data, $this.secret, $this.enc_cnf);
               }
