@@ -262,7 +262,6 @@ if(config.fetch.enabled){
 
       let scode = res.statusCode,
       rawData = '';
-      console.log(scode)
       if(scode < 200 || scode >= 300){
         cb('request failed with code '+ scode);
         return cl(vb,['error','db from '+ $this.fetch_config.hostname +' failed with code '+ scode],91)
@@ -292,7 +291,6 @@ if(config.fetch.enabled){
     });
 
     req.on('error', function(err){
-      console.log(err)
       cb(err);
     })
 
@@ -361,7 +359,6 @@ if(config.sync.enabled){
     });
 
     req.on('error', function(err){
-      console.log(err)
       cb(err);
     })
 
