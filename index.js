@@ -452,7 +452,6 @@ function tweek(src) {
   		};
 
       if(!timeout || typeof timeout === 'object'){
-        //maybee add immediate for first call option here
         clearTimeout(timeout);
         timeout = setTimeout(later, config.turbo.ms);
         if(typeof timeout === 'object'){
@@ -473,7 +472,7 @@ function tweek(src) {
   }
 
   if(config.settings.crypto_utils){
-
+    let cnf_enc = config.encryption;
     db.hmac = function(data, secret){
       return enc.hmac(data, secret, config.hmac.digest, config.hmac.encode);
     }
@@ -488,24 +487,24 @@ function tweek(src) {
 
     db.encrypt = function(data, secret){
       if(!secret){
-        secret = config.encryption.secret;
+        secret = cnf_enc.secret;
       }
-      return enc.encrypt(data, secret, config.encryption.settings);
+      return enc.encrypt(data, secret, cnf_enc.settings);
     }
 
     db.decrypt = function(data, secret){
       if(!secret){
-        secret = config.encryption.secret;
+        secret = cnf_enc.secret;
       }
-      return enc.decrypt(data, config.encryption.secret, config.encryption.settings);
+      return enc.decrypt(data, cnf_enc.secret, cnf_enc.settings);
     }
 
     db.keygen = function(){
       return enc.keygen(
-        config.encryption.secret_len,
-        config.encryption.iterations,
-        config.encryption.settings.digest,
-        config.encryption.settings.encode
+        cnf_enc.secret_len,
+        cnf_enc.iterations,
+        cnf_enc.settings.digest,
+        cnf_enc.settings.encode
       )
     }
   }

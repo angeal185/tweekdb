@@ -2,7 +2,9 @@
 # tweekdb
 the flat-file, in-memory or remote-sync db that is as lightning fast or disturbingly slow as you configure it to be.
 
-[![NPM Version][npm-img]][npm-url] ![dep-img] ![sz-img] ![lic-img]
+![Codacy Badge](https://app.codacy.com/project/badge/Grade/526610b860784ec08094f0c0b1b8f907) ![dep-img] ![sz-img]
+
+[![NPM Version][npm-img]][npm-url] ![lic-img]
 
 [npm-img]: https://badgen.net/npm/v/tweekdb?style=flat-square
 [dep-img]:https://badgen.net/david/dep/angeal185/tweekdb?style=flat-square
