@@ -1,6 +1,5 @@
 const fs = require('fs'),
 zlib = require('zlib'),
-https = require('https'),
 utils = require('./lib/utils'),
 enc = require('./lib/enc');
 
@@ -224,43 +223,19 @@ if(config.fetch.enabled){
       }
     }
 
-    const req = https.request(this.fetch_config, function(res){
-
-      let scode = res.statusCode,
-      rawData = '';
-      if(scode < 200 || scode >= 300){
-        cb('request failed with code '+ scode);
-        return utils.cl(vb,['error','db from '+ $this.fetch_config.hostname +' failed with code '+ scode],91)
+    utils.req($this, 'fetch_config', config, function(err,data){
+      if(err){return cb(err)}
+      try {
+        if(obj.encryption){
+          data = enc.decrypt(data, $this.secret, $this.enc_cnf);
+        }
+        data = obj.deserialize(data);
+        cb(false, data);
+        utils.cl(vb,['status','db from '+ $this.fetch_config.hostname +' cached and ready.'],96);
+      } catch (err) {
+        throw err;
       }
-
-      res.setEncoding('utf8');
-
-      res.on('data', function(chunk){
-        rawData += chunk;
-      });
-
-      res.on('end', function(){
-          try {
-            let data = rawData;
-            if($this.encryption){
-              data = enc.decrypt(data, $this.secret, $this.enc_cnf);
-            }
-            data = $this.deserialize(data);
-            cb(false, data);
-            utils.cl(vb,['status','db from '+ $this.fetch_config.hostname +' cached and ready.'],96);
-          } catch (err) {
-            throw err;
-          }
-
-      });
-
-    });
-
-    req.on('error', function(err){
-      cb(err);
     })
-
-    req.end();
 
   }
 }
@@ -293,43 +268,17 @@ if(config.sync.enabled){
 
     this.sync_config.headers['Content-Length'] = body.length;
 
-    const req = https.request(this.sync_config, function(res){
-
-      let scode = res.statusCode,
-      rawData = '';
-
-      if(scode < 200 || scode >= 300){
-        cb('request failed with code '+ scode);
-        return utils.cl(vb,['error','db from '+ $this.sync_config.hostname +' failed with code '+ scode],91)
+    utils.req($this, 'sync_config', config, function(err,data){
+      if(err){return cb(err)}
+      try {
+        data = $this.deserialize(data);
+        cb(false, data);
+        utils.cl(vb,['status','db from '+ $this.sync_config.hostname +' cached and ready.'],96);
+      } catch (err) {
+        throw err;
       }
-
-      res.setEncoding('utf8');
-
-      res.on('data', function(chunk){
-        rawData += chunk;
-      });
-
-      res.on('end', function(){
-          try {
-            let data = rawData;
-
-            data = $this.deserialize(data);
-            cb(false, data);
-            utils.cl(vb,['status','db from '+ $this.sync_config.hostname +' cached and ready.'],96);
-          } catch (err) {
-            throw err;
-          }
-
-      });
-
-    });
-
-    req.on('error', function(err){
-      cb(err);
     })
 
-    req.write(body)
-    req.end();
 
   }
 }
