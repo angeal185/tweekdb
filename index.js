@@ -69,14 +69,14 @@ tweekdb.prototype = {
     if(!cb){
       try {
         data = fs.readFileSync(src);
-        data = utils.check_data(this, data, config);
+        data = utils.check_read(this, data, config);
         utils.cl(vb,['status','db '+ src +' cached and ready.'],96);
         return this.deserialize(data);
       } catch(e) {
         utils.cl(vb,['warning','unable to load data, creating new...'],91);
         try {
           data = fs.readFileSync(this.backup_pre + src +'.'+ this.backup_ext);
-          data = utils.check_data(this, data, config);
+          data = utils.check_read(this, data, config);
           utils.cl(vb,['status','db '+ src +' backup cached and ready.'],96);
           return data ? this.deserialize(data) : this.schema;
         } catch (err) {
@@ -94,7 +94,7 @@ tweekdb.prototype = {
       }
     } else {
       let $this = this;
-      fs.readFile(src, function(err,res){
+      fs.readFile(src, function(err,data){
         if(err){
           fs.readFile(this.backup_pre + src +'.'+ this.backup_ext, function(err, res){
             if(err){
@@ -110,6 +110,8 @@ tweekdb.prototype = {
               utils.cl(vb,['status','new db '+ src +' cached and ready.'],96);
               return
             }
+
+
             if($this.gzip  || this.gzip_backup){
               res = zlib.unzipSync(res, config.gzip.settings);
             }
@@ -119,16 +121,11 @@ tweekdb.prototype = {
             }
             cb(false, $this.deserialize(res));
             utils.cl(vb,['status','db '+ src +' backup cached and ready.'],96);
+
           });
         } else {
-          if($this.gzip){
-            data = zlib.unzipSync(data, config.gzip.settings);
-          }
-          data = data.toString('utf8');
-          if($this.encryption){
-            res = enc.decrypt(res, $this.secret, $this.enc_cnf);
-          }
-          cb(false, $this.deserialize(res));
+          data = utils.check_read($this, res, config)
+          cb(false, $this.deserialize(data));
           utils.cl(vb,['status','db '+ src +' cached and ready.'],96);
         }
       })
@@ -136,13 +133,7 @@ tweekdb.prototype = {
   },
   save: function(data, cb) {
     let src = this.src;
-    data = this.serialize(data);
-    if(this.encryption){
-      data = enc.encrypt(data, this.secret, this.enc_cnf);
-    }
-    if(this.gzip){
-      data = zlib.gzipSync(data, config.gzip.settings);
-    }
+    data = utils.check_write(this, data, config);
     if(!cb){
       let res = fs.writeFileSync(src, data);
       utils.write_backup(this, data, config);
@@ -169,16 +160,11 @@ tweekdb.prototype = {
     }
   },
   set_backup: function(data, cb) {
-    data = this.serialize(data);
 
     let dest = config.backup.pre + this.src +'.'+ config.backup.ext;
 
-    if(this.encryption){
-      data = enc.encrypt(data, this.secret, this.enc_cnf);
-    }
-    if(this.gzip){
-      data = zlib.gzipSync(data, config.gzip.settings);
-    }
+    data = utils.check_write(this, data, config);
+
     if(!cb){
       return fs.writeFileSync(dest, data);
     }
@@ -226,10 +212,10 @@ if(config.fetch.enabled){
     utils.req($this, 'fetch_config', config, function(err,data){
       if(err){return cb(err)}
       try {
-        if(obj.encryption){
+        if($this.encryption){
           data = enc.decrypt(data, $this.secret, $this.enc_cnf);
         }
-        data = obj.deserialize(data);
+        data = $this.deserialize(data);
         cb(false, data);
         utils.cl(vb,['status','db from '+ $this.fetch_config.hostname +' cached and ready.'],96);
       } catch (err) {
