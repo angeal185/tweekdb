@@ -1,5 +1,6 @@
 const fs = require('fs'),
 zlib = require('zlib'),
+https = require('https'),
 utils = require('./lib/utils'),
 enc = require('./lib/enc');
 
