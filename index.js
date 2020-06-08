@@ -124,7 +124,7 @@ tweekdb.prototype = {
 
           });
         } else {
-          data = utils.check_read($this, res, config)
+          data = utils.check_read($this, data, config);
           cb(false, $this.deserialize(data));
           utils.cl(vb,['status','db '+ src +' cached and ready.'],96);
         }
