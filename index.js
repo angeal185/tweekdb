@@ -21,7 +21,7 @@ try {
   cl(config.settings.verbose,['init','config file not found, loading defaults.'],96);
 }
 
-Object.freeze(config)
+Object.freeze(config);
 
 const vb = config.settings.verbose,
 lp = config.settings.lodash_path;
