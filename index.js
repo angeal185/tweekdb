@@ -1,25 +1,18 @@
 const fs = require('fs'),
 zlib = require('zlib'),
-https = require('https'),
+utils = require('./lib/utils'),
 enc = require('./lib/enc');
 
 let config,
 cwd = process.cwd(),
 cnf_url = cwd + '/tweekdb.json';
 
-function cl(v,x,y){
-  if(v){
-    let msg = '\x1b[92m[\x1b[94mtweekdb\x1b[92m:\x1b[94m'+x[0]+'\x1b[92m] \x1b['+y+'m'+ x[1] +' \x1b[0m';
-    console.log(msg);
-  }
-}
-
 try {
   config = require(cnf_url);
-  cl(config.settings.verbose,['init','config file found.'],96);
+  utils.cl(config.settings.verbose,['init','config file found.'],96);
 } catch (err) {
   config = require('./config');
-  cl(config.settings.verbose,['init','config file not found, loading defaults.'],96);
+  utils.cl(config.settings.verbose,['init','config file not found, loading defaults.'],96);
 }
 
 Object.freeze(config);
@@ -83,10 +76,10 @@ tweekdb.prototype = {
         if(this.encryption){
           data = enc.decrypt(data, this.secret, this.enc_cnf);
         }
-        cl(vb,['status','db '+ src +' cached and ready.'],96);
+        utils.cl(vb,['status','db '+ src +' cached and ready.'],96);
         return this.deserialize(data);
       } catch(e) {
-        cl(vb,['warning','unable to load data, creating new...'],91);
+        utils.cl(vb,['warning','unable to load data, creating new...'],91);
         try {
           let data = fs.readFileSync(this.backup_pre + src +'.'+ this.backup_ext);
           if(this.gzip  || this.gzip_backup){
@@ -96,7 +89,7 @@ tweekdb.prototype = {
           if(this.encryption){
             data = enc.decrypt(data, this.secret, this.enc_cnf);
           }
-          cl(vb,['status','db '+ src +' backup cached and ready.'],96);
+          utils.cl(vb,['status','db '+ src +' backup cached and ready.'],96);
           return data ? this.deserialize(data) : this.schema;
         } catch (err) {
           let data = this.serialize(this.schema);
@@ -107,7 +100,7 @@ tweekdb.prototype = {
             data = zlib.gzipSync(data, config.gzip.settings);
           }
           fs.writeFileSync(src, data);
-          cl(vb,['status','new db '+ src +' cached and ready.'],96);
+          utils.cl(vb,['status','new db '+ src +' cached and ready.'],96);
           return this.schema;
         }
       }
@@ -126,7 +119,7 @@ tweekdb.prototype = {
               }
               fs.writeFileSync(src, data);
               cb(false, $this.schema);
-              cl(vb,['status','new db '+ src +' cached and ready.'],96);
+              utils.cl(vb,['status','new db '+ src +' cached and ready.'],96);
               return
             }
             if($this.gzip  || this.gzip_backup){
@@ -137,7 +130,7 @@ tweekdb.prototype = {
               res = enc.decrypt(res, $this.secret, $this.enc_cnf);
             }
             cb(false, $this.deserialize(res));
-            cl(vb,['status','db '+ src +' backup cached and ready.'],96);
+            utils.cl(vb,['status','db '+ src +' backup cached and ready.'],96);
           });
         } else {
           if($this.gzip){
@@ -148,7 +141,7 @@ tweekdb.prototype = {
             res = enc.decrypt(res, $this.secret, $this.enc_cnf);
           }
           cb(false, $this.deserialize(res));
-          cl(vb,['status','db '+ src +' cached and ready.'],96);
+          utils.cl(vb,['status','db '+ src +' cached and ready.'],96);
         }
       })
     }
@@ -170,7 +163,7 @@ tweekdb.prototype = {
         }
         fs.writeFile(this.backup_pre + src +'.'+ this.backup_ext, data, function(err){
           if(err){
-            return cl(vb,['error','backup failed to save'],91);
+            return utils.cl(vb,['error','backup failed to save'],91);
           }
         })
       }
@@ -188,7 +181,7 @@ tweekdb.prototype = {
           cb(false)
         } else {
           if(err){
-            return cl(vb,['error','Turbo file write failed'],91);
+            return utils.cl(vb,['error','Turbo file write failed'],91);
           }
         }
 
@@ -197,7 +190,7 @@ tweekdb.prototype = {
             data = zlib.gzipSync(data, config.gzip.settings);
           }
           fs.writeFile($this.backup_pre + $this.src +'.'+ $this.backup_ext, data, function(err){
-            if(err){return cl(vb,['error','backup failed to save'],91);}
+            if(err){return utils.cl(vb,['error','backup failed to save'],91);}
           })
         }
       })
@@ -264,7 +257,7 @@ if(config.fetch.enabled){
       rawData = '';
       if(scode < 200 || scode >= 300){
         cb('request failed with code '+ scode);
-        return cl(vb,['error','db from '+ $this.fetch_config.hostname +' failed with code '+ scode],91)
+        return utils.cl(vb,['error','db from '+ $this.fetch_config.hostname +' failed with code '+ scode],91)
       }
 
       res.setEncoding('utf8');
@@ -281,7 +274,7 @@ if(config.fetch.enabled){
             }
             data = $this.deserialize(data);
             cb(false, data);
-            cl(vb,['status','db from '+ $this.fetch_config.hostname +' cached and ready.'],96);
+            utils.cl(vb,['status','db from '+ $this.fetch_config.hostname +' cached and ready.'],96);
           } catch (err) {
             throw err;
           }
@@ -334,7 +327,7 @@ if(config.sync.enabled){
 
       if(scode < 200 || scode >= 300){
         cb('request failed with code '+ scode);
-        return cl(vb,['error','db from '+ $this.sync_config.hostname +' failed with code '+ scode],91)
+        return utils.cl(vb,['error','db from '+ $this.sync_config.hostname +' failed with code '+ scode],91)
       }
 
       res.setEncoding('utf8');
@@ -349,7 +342,7 @@ if(config.sync.enabled){
 
             data = $this.deserialize(data);
             cb(false, data);
-            cl(vb,['status','db from '+ $this.sync_config.hostname +' cached and ready.'],96);
+            utils.cl(vb,['status','db from '+ $this.sync_config.hostname +' cached and ready.'],96);
           } catch (err) {
             throw err;
           }
@@ -523,13 +516,13 @@ function tweek(src) {
   }
 
   if(config.cron.enabled){
-    cl(vb,['build','initializing cron tasks...'],96);
+    utils.cl(vb,['build','initializing cron tasks...'],96);
     setInterval(function(){
       src.cron_job(db.value())
     },config.cron.ms)
   }
 
-  cl(vb,['build','build status success.'],96);
+  utils.cl(vb,['build','build status success.'],96);
 
   return db;
 }
