@@ -1,6 +1,6 @@
 
 # tweekdb
-the flat-file, in-memory or remote-sync db that is as lightning fast or disturbingly slow as you configure it to be.
+the flat-file, in-memory, remote-sync or hybrid db that is as lightning as you configure it to be.
 
 ![cd-img] ![dep-img] ![sz-img]
 
@@ -39,6 +39,9 @@ const { tweek, tweekdb } = require('tweekdb');
 
 //minimal base setup example
 const db = tweek(new tweekdb('./db'));
+
+//minimal cache only setup example
+const db = tweek(new tweekdb());
 
 //complete custom base setup example
 const db = tweek(new tweekdb('./db',{

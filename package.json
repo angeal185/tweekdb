@@ -1,7 +1,7 @@
 {
   "name": "tweekdb",
-  "version": "1.0.3",
-  "description": "flat-file, in-memory or remote-sync db that is as lightning fast or disturbingly slow as you configure it to be",
+  "version": "1.0.4",
+  "description": "flat-file, in-memory or remote-sync db that is as lightning as you configure it to be",
   "main": "./index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
