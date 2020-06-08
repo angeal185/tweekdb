@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/angeal185/tweekdb.git"
   },
-  "keywords": ["db","database","lodash","json","json-db","json-database","encrypted-store", "in-memory-database", "in-memory-storage","cache-storage","flat-file-db","flat-file-storage","nosql-database"],
+  "keywords": ["db","database","lodash","json","json-db","json-database","encrypted-store", "in-memory-database", "in-memory-storage","cache-storage","flat-file-db","flat-file-storage","nosql-database","hybrid-database"],
   "author": "ben eaves",
   "license": "MIT",
   "bugs": {
