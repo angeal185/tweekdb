@@ -158,16 +158,7 @@ tweekdb.prototype = {
     }
     if(!cb){
       let res = fs.writeFileSync(src, data);
-      if(this.backup){
-        if(!this.gzip && this.gzip_backup){
-          data = zlib.gzipSync(data, config.gzip.settings);
-        }
-        fs.writeFile(this.backup_pre + src +'.'+ this.backup_ext, data, function(err){
-          if(err){
-            return utils.cl(vb,['error','backup failed to save'],91);
-          }
-        })
-      }
+      utils.write_backup(this, data, config);
 
       if(!config.turbo.enabled){
         return res;
@@ -186,14 +177,7 @@ tweekdb.prototype = {
           }
         }
 
-        if($this.backup){
-          if(!$this.gzip && $this.gzip_backup){
-            data = zlib.gzipSync(data, config.gzip.settings);
-          }
-          fs.writeFile($this.backup_pre + $this.src +'.'+ $this.backup_ext, data, function(err){
-            if(err){return utils.cl(vb,['error','backup failed to save'],91);}
-          })
-        }
+        utils.write_backup($this, data, config);
       })
     }
   },
