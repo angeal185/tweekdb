@@ -71,10 +71,11 @@ function tweekdb(src, cnf){
 
 tweekdb.prototype = {
   load: function(cb) {
-    let src = this.src;
+    let src = this.src,
+    data;
     if(!cb){
       try {
-        let data = fs.readFileSync(src);
+        data = fs.readFileSync(src);
         if(this.gzip){
           data = zlib.unzipSync(data, config.gzip.settings);
         }
