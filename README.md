@@ -1,6 +1,6 @@
 
 # tweekdb
-the flat-file, in-memory, remote-sync or hybrid db that is as lightning as you configure it to be.
+The flat-file, in-memory, remote-sync or hybrid db that is as lightning as you configure it to be.
 
 ![cd-img] ![dep-img] ![sz-img]
 
