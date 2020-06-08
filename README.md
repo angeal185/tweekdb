@@ -12,6 +12,8 @@ the flat-file, in-memory or remote-sync db that is as lightning fast or disturbi
 [sz-img]:https://badgen.net/packagephobia/publish/tweekdb?style=flat-square
 [lic-img]: https://badgen.net/npm/license/tweekdb?style=flat-square
 
+[npm-url]: https://npmjs.org/package/tweekdb
+
 
 #### [Live playground](https://runkit.com/angeal185/tweekdb)
 
