@@ -1,6 +1,17 @@
 
 # tweekdb
 the flat-file, in-memory or remote-sync db that is as lightning fast or disturbingly slow as you configure it to be.
+
+[![NPM Version][npm-img]][npm-url] ![dep-img] ![sz-img] ![lic-img]
+
+[npm-img]: https://badgen.net/npm/v/tweekdb?style=flat-square
+[dep-img]:https://badgen.net/david/dep/angeal185/tweekdb?style=flat-square
+[sz-img]:https://badgen.net/packagephobia/publish/tweekdb?style=flat-square
+[lic-img]: https://badgen.net/npm/license/tweekdb?style=flat-square
+
+[npm-url]: https://npmjs.org/package/tweekdb
+
+
 #### [Live playground](https://runkit.com/angeal185/tweekdb)
 
 ## Installation

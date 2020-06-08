@@ -3,7 +3,9 @@ zlib = require('zlib'),
 https = require('https'),
 enc = require('./lib/enc');
 
-let config;
+let config,
+cwd = process.cwd(),
+cnf_url = cwd + '/tweekdb.json';
 
 function cl(v,x,y){
   if(v){
@@ -12,7 +14,7 @@ function cl(v,x,y){
 }
 
 try {
-  config = require(process.cwd() + '/tweekdb.json');
+  config = require(cnf_url);
   cl(config.settings.verbose,['init','config file found.'],96);
 } catch (err) {
   config = require('./config');
@@ -21,9 +23,10 @@ try {
 
 Object.freeze(config)
 
-const vb = config.settings.verbose;
+const vb = config.settings.verbose,
+lp = config.settings.lodash_path;
 
-let _ = require(config.settings.lodash_path);
+let _ = require(lp);
 
 if(config.settings.noconflict){
   _ = _.runInContext();
@@ -67,10 +70,10 @@ function tweekdb(src, cnf){
 
 tweekdb.prototype = {
   load: function(cb) {
-
+    let src = this.src;
     if(!cb){
       try {
-        let data = fs.readFileSync(this.src);
+        let data = fs.readFileSync(src);
         if(this.gzip){
           data = zlib.unzipSync(data, config.gzip.settings);
         }
@@ -78,12 +81,12 @@ tweekdb.prototype = {
         if(this.encryption){
           data = enc.decrypt(data, this.secret, this.enc_cnf);
         }
-        cl(vb,['status','db '+ this.src +' cached and ready.'],96);
+        cl(vb,['status','db '+ src +' cached and ready.'],96);
         return this.deserialize(data);
       } catch(e) {
         cl(vb,['warning','unable to load data, creating new...'],91);
         try {
-          let data = fs.readFileSync(this.backup_pre + this.src +'.'+ this.backup_ext);
+          let data = fs.readFileSync(this.backup_pre + src +'.'+ this.backup_ext);
           if(this.gzip  || this.gzip_backup){
             data = zlib.unzipSync(data, config.gzip.settings);
           }
@@ -91,7 +94,7 @@ tweekdb.prototype = {
           if(this.encryption){
             data = enc.decrypt(data, this.secret, this.enc_cnf);
           }
-          cl(vb,['status','db '+ this.src +' backup cached and ready.'],96);
+          cl(vb,['status','db '+ src +' backup cached and ready.'],96);
           return data ? this.deserialize(data) : this.schema;
         } catch (err) {
           let data = this.serialize(this.schema);
@@ -101,16 +104,16 @@ tweekdb.prototype = {
           if(this.gzip){
             data = zlib.gzipSync(data, config.gzip.settings);
           }
-          fs.writeFileSync(this.src, data);
-          cl(vb,['status','new db '+ this.src +' cached and ready.'],96);
+          fs.writeFileSync(src, data);
+          cl(vb,['status','new db '+ src +' cached and ready.'],96);
           return this.schema;
         }
       }
     } else {
       let $this = this;
-      fs.readFile(this.src, function(err,res){
+      fs.readFile(src, function(err,res){
         if(err){
-          fs.readFile(this.backup_pre + this.src +'.'+ this.backup_ext, function(err, res){
+          fs.readFile(this.backup_pre + src +'.'+ this.backup_ext, function(err, res){
             if(err){
               let data = $this.serialize($this.schema);
               if($this.encryption){
@@ -119,9 +122,9 @@ tweekdb.prototype = {
               if($this.gzip){
                 data = zlib.gzipSync(data, config.gzip.settings);
               }
-              fs.writeFileSync($this.src, data);
+              fs.writeFileSync(src, data);
               cb(false, $this.schema);
-              cl(vb,['status','new db '+ this.src +' cached and ready.'],96);
+              cl(vb,['status','new db '+ src +' cached and ready.'],96);
               return
             }
             if($this.gzip  || this.gzip_backup){
@@ -132,7 +135,7 @@ tweekdb.prototype = {
               res = enc.decrypt(res, $this.secret, $this.enc_cnf);
             }
             cb(false, $this.deserialize(res));
-            cl(vb,['status','db '+ this.src +' backup cached and ready.'],96);
+            cl(vb,['status','db '+ src +' backup cached and ready.'],96);
           });
         } else {
           if($this.gzip){
@@ -143,12 +146,13 @@ tweekdb.prototype = {
             res = enc.decrypt(res, $this.secret, $this.enc_cnf);
           }
           cb(false, $this.deserialize(res));
-          cl(vb,['status','db '+ this.src +' cached and ready.'],96);
+          cl(vb,['status','db '+ src +' cached and ready.'],96);
         }
       })
     }
   },
   save: function(data, cb) {
+    let src = this.src;
     data = this.serialize(data);
     if(this.encryption){
       data = enc.encrypt(data, this.secret, this.enc_cnf);
@@ -157,12 +161,12 @@ tweekdb.prototype = {
       data = zlib.gzipSync(data, config.gzip.settings);
     }
     if(!cb){
-      let res = fs.writeFileSync(this.src, data);
+      let res = fs.writeFileSync(src, data);
       if(this.backup){
         if(!this.gzip && this.gzip_backup){
           data = zlib.gzipSync(data, config.gzip.settings);
         }
-        fs.writeFile(this.backup_pre + this.src +'.'+ this.backup_ext, data, function(err){
+        fs.writeFile(this.backup_pre + src +'.'+ this.backup_ext, data, function(err){
           if(err){
             return cl(vb,['error','backup failed to save'],91);
           }
@@ -175,7 +179,7 @@ tweekdb.prototype = {
 
     } else {
       let $this = this;
-      fs.writeFile(this.src, data, function(err){
+      fs.writeFile(src, data, function(err){
 
         if(!config.turbo.enabled){
           if(err){return cb(err)}
@@ -515,7 +519,7 @@ function tweek(src) {
 
   if(config.settings.dev){
     db.clone_config = function(){
-      fs.writeFileSync(process.cwd() + '/tweekdb.json', JSON.stringify(config,0,2))
+      fs.writeFileSync(cnf_url, JSON.stringify(config,0,2))
     }
   }
 
